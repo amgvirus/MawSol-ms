@@ -102,24 +102,25 @@ export default function WorkerDailyEntryPage() {
     // Auto-calculate production birds, non-production, and total birds
     useEffect(() => {
         async function calculateBirds() {
-            if (!selectedShedId || productionCrates === undefined) return
+            if (!selectedShedId || productionCrates === undefined || productionCrates === 0) {
+                setCalculatedBirds(null)
+                return
+            }
 
             try {
-                // Get the shed to find number of birds
+                // Get the shed to find number of birds (30 eggs per crate)
                 const selectedShed = sheds.find(s => s.id === selectedShedId)
                 if (!selectedShed) return
 
-                const shedBirdsPerCrate = selectedShed.number_of_birds
-
-                // Calculate production birds from crates
-                const calcProductionBirds = Math.round(productionCrates * shedBirdsPerCrate)
+                const EGGS_PER_CRATE = 30
+                // Convert crate decimal to total eggs
+                const totalEggs = productionCrates * EGGS_PER_CRATE
 
                 // Get latest entry to calculate total birds with mortality deduction
                 const latestEntry = await getLatestEntry(selectedShedId)
                 
-                let calcTotalBirds = shedBirdsPerCrate // Default to shed's number_of_birds
-                let calcNonProduction = 0
-
+                let calcTotalBirds = selectedShed.number_of_birds // Default to shed's number_of_birds
+                
                 if (latestEntry) {
                     // Start from previous day's total birds
                     const previousTotalBirds = latestEntry.total_birds
@@ -127,8 +128,11 @@ export default function WorkerDailyEntryPage() {
                     calcTotalBirds = previousTotalBirds - latestEntry.mortality
                 }
 
+                // Production birds = eggs produced (treating each egg as a bird metric)
+                const calcProductionBirds = Math.round(totalEggs)
+                
                 // Non-production birds = Total - Production
-                calcNonProduction = Math.max(0, calcTotalBirds - calcProductionBirds)
+                const calcNonProduction = Math.max(0, calcTotalBirds - calcProductionBirds)
 
                 setCalculatedBirds({
                     production_birds: calcProductionBirds,
@@ -136,10 +140,10 @@ export default function WorkerDailyEntryPage() {
                     total_birds: calcTotalBirds
                 })
 
-                // Auto-set the calculated values
-                setValue('production_birds', calcProductionBirds)
-                setValue('non_production', calcNonProduction)
-                setValue('total_birds', calcTotalBirds)
+                // Auto-set the calculated values in form
+                setValue('production_birds', calcProductionBirds, { shouldValidate: true })
+                setValue('non_production', calcNonProduction, { shouldValidate: true })
+                setValue('total_birds', calcTotalBirds, { shouldValidate: true })
             } catch (error) {
                 console.error('Error calculating birds:', error)
             }
@@ -244,9 +248,11 @@ export default function WorkerDailyEntryPage() {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <Input
-                                        label="Prod. Crates"
+                                        label="Prod. Crates (30 eggs/crate, e.g., 5.15 = 5 crates + 15 eggs)"
                                         type="number"
                                         step="0.01"
+                                        min="0"
+                                        placeholder="e.g., 5.15"
                                         className="font-mono"
                                         error={errors.production_crates?.message}
                                         {...register('production_crates', { valueAsNumber: true })}
@@ -255,9 +261,8 @@ export default function WorkerDailyEntryPage() {
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
                                             Prod. Birds
                                         </label>
-                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
-                                            {calculatedBirds?.production_birds || 0}
-                                            <span className="text-xs text-gray-500 ml-2">(auto-calculated)</span>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono">
+                                            {calculatedBirds?.production_birds ?? '-'} eggs
                                         </div>
                                     </div>
                                 </div>
@@ -267,28 +272,32 @@ export default function WorkerDailyEntryPage() {
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
                                             Total Birds
                                         </label>
-                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
-                                            {calculatedBirds?.total_birds || 0}
-                                            <span className="text-xs text-gray-500 ml-2">(auto-calc)</span>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono">
+                                            {calculatedBirds?.total_birds ?? '-'}
                                         </div>
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
                                             Non-Prod
                                         </label>
-                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
-                                            {calculatedBirds?.non_production || 0}
-                                            <span className="text-xs text-gray-500 ml-2">(auto-calc)</span>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono">
+                                            {calculatedBirds?.non_production ?? '-'}
                                         </div>
                                     </div>
                                     <Input
                                         label="Mortality"
                                         type="number"
+                                        min="0"
                                         className="font-mono text-red-600"
                                         error={errors.mortality?.message}
                                         {...register('mortality', { valueAsNumber: true })}
                                     />
                                 </div>
+
+                                {/* Hidden fields for form submission */}
+                                <input type="hidden" {...register('production_birds', { valueAsNumber: true })} />
+                                <input type="hidden" {...register('total_birds', { valueAsNumber: true })} />
+                                <input type="hidden" {...register('non_production', { valueAsNumber: true })} />
                             </div>
                         </div>
 

@@ -67,10 +67,10 @@ export const dailyEntrySchema = z.object({
         .min(0, 'Mortality must be 0 or greater'),
     notes: z.string().max(1000, 'Notes must be less than 1000 characters').optional(),
 }).refine((data) => {
-    // Non-production + production birds should not exceed total birds
-    return (data.non_production + data.production_birds) <= data.total_birds
+    // Total birds must be >= Production + Non-production
+    return data.total_birds >= (data.production_birds + data.non_production)
 }, {
-    message: 'Production + Non-production birds cannot exceed total birds',
+    message: 'Total birds must be at least the sum of production and non-production birds',
     path: ['total_birds'],
 })
 
