@@ -183,26 +183,26 @@ export default function AdminEntriesPage() {
                         <Select
                             label="Shed"
                             {...register('shed_id')}
-                        >
-                            <option value="">All Sheds</option>
-                            {sheds.map(shed => (
-                                <option key={shed.id} value={shed.id}>
-                                    {shed.name}
-                                </option>
-                            ))}
-                        </Select>
+                            options={[
+                                { value: '', label: 'All Sheds' },
+                                ...sheds.map(shed => ({
+                                    value: shed.id,
+                                    label: shed.name
+                                }))
+                            ]}
+                        />
 
                         <Select
                             label="Worker"
                             {...register('worker_id')}
-                        >
-                            <option value="">All Workers</option>
-                            {workers.map(worker => (
-                                <option key={worker.id} value={worker.id}>
-                                    {worker.full_name}
-                                </option>
-                            ))}
-                        </Select>
+                            options={[
+                                { value: '', label: 'All Workers' },
+                                ...workers.map(worker => ({
+                                    value: worker.id,
+                                    label: worker.full_name || worker.email
+                                }))
+                            ]}
+                        />
 
                         <Input
                             label="Start Date"
@@ -219,11 +219,12 @@ export default function AdminEntriesPage() {
                         <Select
                             label="Status"
                             {...register('show_corrected')}
-                        >
-                            <option value="all">All Entries</option>
-                            <option value="corrected">Corrected Only</option>
-                            <option value="original">Original Only</option>
-                        </Select>
+                            options={[
+                                { value: 'all', label: 'All Entries' },
+                                { value: 'corrected', label: 'Corrected Only' },
+                                { value: 'original', label: 'Original Only' }
+                            ]}
+                        />
                     </form>
                 </CardContent>
             </Card>
