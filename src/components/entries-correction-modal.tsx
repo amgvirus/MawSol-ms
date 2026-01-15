@@ -116,30 +116,30 @@ export function EntriesCorrectionModal({
                 )}
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm text-blue-700 dark:text-blue-400">
-                    <p>💡 <span className="font-semibold">Auto-calculation enabled:</span> Production birds and non-production will be calculated automatically based on crates entered.</p>
+                    <p>💡 <span className="font-semibold">Auto-calculation enabled:</span> Production birds and non-production are calculated automatically (30 eggs per crate).</p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
+                    {/* Production Crates Input */}
                     <Input
-                        label="Production Crates"
+                        label="Production Crates (30 eggs/crate, e.g., 5.15 = 5 crates + 15 eggs)"
                         type="number"
                         step="0.01"
+                        min="0"
+                        placeholder="e.g., 5.15"
                         value={formData.production_crates}
                         onChange={(e) => handleChange('production_crates', e.target.value)}
-                        placeholder="Enter crates (auto-calculates birds)"
                     />
 
+                    {/* Calculated Fields Display */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Production Birds <span className="text-amber-500">(Auto)</span>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                                Production Birds
                             </label>
-                            <input
-                                type="number"
-                                value={formData.production_birds}
-                                disabled
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
-                            />
+                            <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono">
+                                {formData.production_birds} eggs
+                            </div>
                         </div>
                         <Input
                             label="Total Birds"
@@ -149,35 +149,35 @@ export function EntriesCorrectionModal({
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Non-Production <span className="text-amber-500">(Auto)</span>
-                        </label>
-                        <input
+                    <div className="grid grid-cols-3 gap-4">
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                                Non-Production
+                            </label>
+                            <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono">
+                                {formData.non_production}
+                            </div>
+                        </div>
+                        <Input
+                            label="Mortality"
                             type="number"
-                            value={formData.non_production}
-                            disabled
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                            min="0"
+                            value={formData.mortality}
+                            onChange={(e) => handleChange('mortality', e.target.value)}
                         />
+                        <div></div>
                     </div>
 
-                    <Input
-                        label="Mortality"
-                        type="number"
-                        value={formData.mortality}
-                        onChange={(e) => handleChange('mortality', e.target.value)}
-                    />
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Notes
+                    {/* Notes */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Notes (Optional)
                         </label>
                         <textarea
+                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all min-h-[100px]"
+                            placeholder="Any observations or correction reasons..."
                             value={formData.notes}
                             onChange={(e) => handleChange('notes', e.target.value)}
-                            placeholder="Add correction notes..."
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                     </div>
                 </div>
