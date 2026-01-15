@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Modal, Button, Input } from '@/components/ui'
 import { DailyEntryWithRelations } from '@/lib/database.types'
-import { X } from 'lucide-react'
 
 interface EntriesCorrectionModalProps {
     entry: DailyEntryWithRelations | null
@@ -18,6 +17,8 @@ interface EntriesCorrectionModalProps {
         notes: string
     }) => Promise<void>
 }
+
+const EGGS_PER_CRATE = 30
 
 export function EntriesCorrectionModal({
     entry,
@@ -37,11 +38,30 @@ export function EntriesCorrectionModal({
 
     if (!entry) return null
 
-    const handleChange = (field: string, value: string | number) => {
+    // Auto-calculate based on production crates
+    const handleCratesChange = (value: string) => {
+        const crates = parseFloat(value) || 0
+        const productionBirds = Math.round(crates * EGGS_PER_CRATE)
+        const totalBirds = formData.total_birds || entry.shed?.number_of_birds || entry.shed?.capacity || 0
+        const nonProduction = Math.max(0, totalBirds - productionBirds)
+
         setFormData(prev => ({
             ...prev,
-            [field]: typeof value === 'string' ? (field === 'notes' ? value : parseFloat(value) || 0) : value
+            production_crates: crates,
+            production_birds: productionBirds,
+            non_production: nonProduction,
         }))
+    }
+
+    const handleChange = (field: string, value: string | number) => {
+        if (field === 'production_crates') {
+            handleCratesChange(value as string)
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [field]: typeof value === 'string' && field !== 'notes' ? parseFloat(value) || 0 : value
+            }))
+        }
     }
 
     const handleSave = async () => {
@@ -95,35 +115,49 @@ export function EntriesCorrectionModal({
                     </div>
                 )}
 
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm text-blue-700 dark:text-blue-400">
+                    <p>💡 <span className="font-semibold">Auto-calculation enabled:</span> Production birds and non-production will be calculated automatically based on crates entered.</p>
+                </div>
+
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Production Crates"
-                            type="number"
-                            step="0.01"
-                            value={formData.production_crates}
-                            onChange={(e) => handleChange('production_crates', e.target.value)}
-                        />
-                        <Input
-                            label="Production Birds"
-                            type="number"
-                            value={formData.production_birds}
-                            onChange={(e) => handleChange('production_birds', e.target.value)}
-                        />
-                    </div>
+                    <Input
+                        label="Production Crates"
+                        type="number"
+                        step="0.01"
+                        value={formData.production_crates}
+                        onChange={(e) => handleChange('production_crates', e.target.value)}
+                        placeholder="Enter crates (auto-calculates birds)"
+                    />
 
                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Production Birds <span className="text-amber-500">(Auto)</span>
+                            </label>
+                            <input
+                                type="number"
+                                value={formData.production_birds}
+                                disabled
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                            />
+                        </div>
                         <Input
                             label="Total Birds"
                             type="number"
                             value={formData.total_birds}
                             onChange={(e) => handleChange('total_birds', e.target.value)}
                         />
-                        <Input
-                            label="Non-Production"
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Non-Production <span className="text-amber-500">(Auto)</span>
+                        </label>
+                        <input
                             type="number"
                             value={formData.non_production}
-                            onChange={(e) => handleChange('non_production', e.target.value)}
+                            disabled
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
                         />
                     </div>
 
