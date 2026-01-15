@@ -179,3 +179,81 @@ export async function getEntriesCount(options?: {
     if (error) throw new Error(error.message)
     return count || 0
 }
+
+export async function correctDailyEntry(
+    id: string,
+    updates: DailyEntryUpdate,
+    adminId: string
+): Promise<DailyEntry> {
+    // Get the current entry to store original values
+    const currentEntry = await getDailyEntryById(id)
+    if (!currentEntry) {
+        throw new Error('Entry not found')
+    }
+
+    // Store original values if not already corrected
+    const originalValues = currentEntry.original_values || {
+        production_crates: currentEntry.production_crates,
+        production_birds: currentEntry.production_birds,
+        total_birds: currentEntry.total_birds,
+        non_production: currentEntry.non_production,
+        mortality: currentEntry.mortality,
+        notes: currentEntry.notes,
+    }
+
+    // Update entry with correction metadata
+    const { data, error } = await supabase
+        .from('daily_entries')
+        .update({
+            ...updates,
+            corrected_by: adminId,
+            corrected_at: new Date().toISOString(),
+            original_values: originalValues,
+        } as any)
+        .eq('id', id)
+        .select()
+        .single()
+
+    if (error) throw new Error(error.message)
+    return data
+}
+
+export async function getCorrectedEntries(options?: {
+    shedId?: string
+    workerId?: string
+    startDate?: string
+    endDate?: string
+    limit?: number
+    offset?: number
+}): Promise<DailyEntryWithRelations[]> {
+    let query = supabase
+        .from('daily_entries')
+        .select('*, shed:sheds(*), worker:profiles(*), corrected_by_profile:corrected_by(full_name, email)')
+        .not('corrected_by', 'is', null)
+        .order('corrected_at', { ascending: false })
+
+    if (options?.shedId) {
+        query = query.eq('shed_id', options.shedId)
+    }
+    if (options?.workerId) {
+        query = query.eq('worker_id', options.workerId)
+    }
+    if (options?.startDate) {
+        query = query.gte('entry_date', options.startDate)
+    }
+    if (options?.endDate) {
+        query = query.lte('entry_date', options.endDate)
+    }
+    if (options?.limit) {
+        query = query.limit(options.limit)
+    }
+    if (options?.offset) {
+        query = query.range(options.offset, options.offset + (options?.limit || 10) - 1)
+    }
+
+    const { data, error } = await query
+
+    if (error) throw new Error(error.message)
+    return data || []
+}
+

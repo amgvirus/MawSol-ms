@@ -117,6 +117,9 @@ export interface Database {
                     non_production: number
                     mortality: number
                     notes: string | null
+                    corrected_by: string | null
+                    corrected_at: string | null
+                    original_values: Json | null
                     created_at: string
                     updated_at: string
                 }
@@ -131,6 +134,9 @@ export interface Database {
                     non_production: number
                     mortality: number
                     notes?: string | null
+                    corrected_by?: string | null
+                    corrected_at?: string | null
+                    original_values?: Json | null
                     created_at?: string
                     updated_at?: string
                 }
@@ -145,6 +151,9 @@ export interface Database {
                     non_production?: number
                     mortality?: number
                     notes?: string | null
+                    corrected_by?: string | null
+                    corrected_at?: string | null
+                    original_values?: Json | null
                     created_at?: string
                     updated_at?: string
                 }

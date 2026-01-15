@@ -72,6 +72,9 @@ CREATE TABLE public.daily_entries (
     non_production INTEGER NOT NULL DEFAULT 0 CHECK (non_production >= 0),
     mortality INTEGER NOT NULL DEFAULT 0 CHECK (mortality >= 0),
     notes TEXT,
+    corrected_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    corrected_at TIMESTAMP WITH TIME ZONE,
+    original_values JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(shed_id, entry_date)
