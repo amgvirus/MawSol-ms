@@ -161,45 +161,57 @@ export default function ReportsPage() {
                         ) : (
                             <div className="space-y-6">
                                 {/* Summary Stats */}
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
                                         <p className="text-xs text-gray-500 uppercase">Total Crates</p>
                                         <p className="text-xl font-bold text-primary-600">{previewData.summary.totalCrates.toFixed(2)}</p>
                                     </div>
                                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                                        <p className="text-xs text-gray-500 uppercase">Total Mortality</p>
-                                        <p className="text-xl font-bold text-red-600">{previewData.summary.totalMortality}</p>
+                                        <p className="text-xs text-gray-500 uppercase">Prod. Birds</p>
+                                        <p className="text-xl font-bold text-blue-600">{previewData.summary.totalBirds}</p>
                                     </div>
                                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-                                        <p className="text-xs text-gray-500 uppercase">Avg Birds</p>
-                                        <p className="text-xl font-bold text-blue-600">{previewData.summary.avgBirds.toFixed(0)}</p>
+                                        <p className="text-xs text-gray-500 uppercase">Non-Prod.</p>
+                                        <p className="text-xl font-bold text-purple-600">{previewData.summary.totalNonProduction}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                                        <p className="text-xs text-gray-500 uppercase">Mortality</p>
+                                        <p className="text-xl font-bold text-red-600">{previewData.summary.totalMortality}</p>
                                     </div>
                                 </div>
 
                                 {/* Data Preview Table */}
-                                <div className="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-xl">
+                                <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
                                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead className="bg-gray-50 dark:bg-gray-800">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shed</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crates</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mortality</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shed</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crates</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prod. Birds</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Non-Prod</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mortality</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             {previewData.entries.slice(0, 5).map((entry: any) => (
                                                 <tr key={entry.id}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                                                         {entry.entry_date}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                                                         {entry.shed?.name}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                                        {entry.production_crates}
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                        {entry.production_crates.toFixed(2)}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                        {entry.production_birds}
+                                                    </td>
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-purple-600 dark:text-purple-400 font-medium">
+                                                        {entry.non_production}
+                                                    </td>
+                                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400 font-medium">
                                                         {entry.mortality}
                                                     </td>
                                                 </tr>

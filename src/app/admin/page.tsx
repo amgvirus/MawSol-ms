@@ -75,6 +75,25 @@ export default function AdminDashboardPage() {
                 />
             </div>
 
+            {/* Production Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard
+                    title="Production Birds (This Month)"
+                    value={stats?.monthlyProduction?.birds.toLocaleString() || 0}
+                    icon={<TrendingUp className="w-6 h-6 text-blue-500" />}
+                />
+                <StatCard
+                    title="Non-Production Birds"
+                    value={stats?.monthlyNonProduction || 0}
+                    icon={<Activity className="w-6 h-6 text-purple-500" />}
+                />
+                <StatCard
+                    title="Total Birds Tracked"
+                    value={stats?.monthlyTotalBirds || 0}
+                    icon={<Home className="w-6 h-6 text-indigo-500" />}
+                />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Production Trends */}
                 <Card>

@@ -260,6 +260,8 @@ export async function getDashboardStats() {
             birds: entries.reduce((sum: number, e: any) => sum + (e.production_birds || 0), 0),
         },
         monthlyMortality: entries.reduce((sum: number, e: any) => sum + (e.mortality || 0), 0),
+        monthlyNonProduction: entries.reduce((sum: number, e: any) => sum + (e.non_production || 0), 0),
+        monthlyTotalBirds: entries.reduce((sum: number, e: any) => sum + (e.total_birds || 0), 0),
         totalEntries: entries.length,
     }
 }

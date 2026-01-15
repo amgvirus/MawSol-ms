@@ -119,13 +119,17 @@ export default function WorkerDailyEntryPage() {
                 // Get latest entry to calculate total birds with mortality deduction
                 const latestEntry = await getLatestEntry(selectedShedId)
                 
-                let calcTotalBirds = selectedShed.number_of_birds // Default to shed's number_of_birds
+                // Determine starting total birds
+                let calcTotalBirds = selectedShed.number_of_birds || selectedShed.capacity || 0
                 
-                if (latestEntry) {
-                    // Start from previous day's total birds
-                    const previousTotalBirds = latestEntry.total_birds
-                    // Deduct previous day's mortality to get today's starting total
-                    calcTotalBirds = previousTotalBirds - latestEntry.mortality
+                if (latestEntry && latestEntry.total_birds > 0) {
+                    // Start from previous day's total birds and deduct mortality
+                    calcTotalBirds = Math.max(0, latestEntry.total_birds - latestEntry.mortality)
+                }
+
+                // If still no total birds value, use capacity as fallback
+                if (calcTotalBirds === 0 && selectedShed.capacity > 0) {
+                    calcTotalBirds = selectedShed.capacity
                 }
 
                 // Production birds = eggs produced (treating each egg as a bird metric)
