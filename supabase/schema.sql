@@ -30,6 +30,7 @@ CREATE TABLE public.sheds (
     variant TEXT NOT NULL CHECK (variant IN ('W', 'B')),
     description TEXT,
     capacity INTEGER DEFAULT 0,
+    number_of_birds INTEGER DEFAULT 0 CHECK (number_of_birds >= 0),
     is_active BOOLEAN DEFAULT TRUE,
     created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

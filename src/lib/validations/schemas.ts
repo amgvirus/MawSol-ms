@@ -30,6 +30,7 @@ export const shedSchema = z.object({
     }),
     description: z.string().max(500, 'Description must be less than 500 characters').optional(),
     capacity: z.number().int().min(0, 'Capacity must be a positive number').default(0),
+    number_of_birds: z.number().int().min(0, 'Number of birds must be a positive number').default(0),
     is_active: z.boolean().default(true),
 })
 

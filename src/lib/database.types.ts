@@ -48,6 +48,7 @@ export interface Database {
                     variant: ShedVariant
                     description: string | null
                     capacity: number
+                    number_of_birds: number
                     is_active: boolean
                     created_by: string | null
                     created_at: string
@@ -59,6 +60,7 @@ export interface Database {
                     variant: ShedVariant
                     description?: string | null
                     capacity?: number
+                    number_of_birds?: number
                     is_active?: boolean
                     created_by?: string | null
                     created_at?: string
@@ -70,6 +72,7 @@ export interface Database {
                     variant?: ShedVariant
                     description?: string | null
                     capacity?: number
+                    number_of_birds?: number
                     is_active?: boolean
                     created_by?: string | null
                     created_at?: string

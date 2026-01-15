@@ -74,6 +74,7 @@ export default function ShedsPage() {
             name: '',
             variant: 'W',
             capacity: 0,
+            number_of_birds: 0,
             description: '',
             is_active: true
         })
@@ -85,6 +86,7 @@ export default function ShedsPage() {
         setValue('name', shed.name)
         setValue('variant', shed.variant)
         setValue('capacity', shed.capacity)
+        setValue('number_of_birds', shed.number_of_birds)
         setValue('description', shed.description || '')
         setValue('is_active', shed.is_active)
         setIsModalOpen(true)
@@ -286,6 +288,14 @@ export default function ShedsPage() {
                             {...register('capacity', { valueAsNumber: true })}
                         />
                     </div>
+
+                    <Input
+                        label="Number of Birds"
+                        type="number"
+                        placeholder="Total birds currently in shed"
+                        error={errors.number_of_birds?.message}
+                        {...register('number_of_birds', { valueAsNumber: true })}
+                    />
 
                     <Input
                         label="Description"

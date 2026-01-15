@@ -7,7 +7,8 @@ import { useAuth } from '@/lib/auth'
 import {
     getAssignedSheds,
     createDailyEntry,
-    checkEntryExists
+    checkEntryExists,
+    getLatestEntry
 } from '@/lib/api'
 import { dailyEntrySchema, DailyEntryFormData } from '@/lib/validations'
 import { Shed } from '@/lib/database.types'
@@ -30,6 +31,11 @@ export default function WorkerDailyEntryPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [dateWarning, setDateWarning] = useState<string | null>(null)
+    const [calculatedBirds, setCalculatedBirds] = useState<{
+        production_birds: number
+        non_production: number
+        total_birds: number
+    } | null>(null)
 
     const { user } = useAuth()
 
@@ -56,6 +62,9 @@ export default function WorkerDailyEntryPage() {
     // Watch fields for logic
     const selectedShedId = watch('shed_id')
     const entryDate = watch('entry_date')
+    const productionCrates = watch('production_crates')
+    const mortality = watch('mortality')
+    const totalBirds = watch('total_birds')
 
     useEffect(() => {
         async function loadSheds() {
@@ -89,6 +98,55 @@ export default function WorkerDailyEntryPage() {
         }
         checkExisting()
     }, [selectedShedId, entryDate])
+
+    // Auto-calculate production birds, non-production, and total birds
+    useEffect(() => {
+        async function calculateBirds() {
+            if (!selectedShedId || productionCrates === undefined) return
+
+            try {
+                // Get the shed to find number of birds
+                const selectedShed = sheds.find(s => s.id === selectedShedId)
+                if (!selectedShed) return
+
+                const shedBirdsPerCrate = selectedShed.number_of_birds
+
+                // Calculate production birds from crates
+                const calcProductionBirds = Math.round(productionCrates * shedBirdsPerCrate)
+
+                // Get latest entry to calculate total birds with mortality deduction
+                const latestEntry = await getLatestEntry(selectedShedId)
+                
+                let calcTotalBirds = shedBirdsPerCrate // Default to shed's number_of_birds
+                let calcNonProduction = 0
+
+                if (latestEntry) {
+                    // Start from previous day's total birds
+                    const previousTotalBirds = latestEntry.total_birds
+                    // Deduct previous day's mortality to get today's starting total
+                    calcTotalBirds = previousTotalBirds - latestEntry.mortality
+                }
+
+                // Non-production birds = Total - Production
+                calcNonProduction = Math.max(0, calcTotalBirds - calcProductionBirds)
+
+                setCalculatedBirds({
+                    production_birds: calcProductionBirds,
+                    non_production: calcNonProduction,
+                    total_birds: calcTotalBirds
+                })
+
+                // Auto-set the calculated values
+                setValue('production_birds', calcProductionBirds)
+                setValue('non_production', calcNonProduction)
+                setValue('total_birds', calcTotalBirds)
+            } catch (error) {
+                console.error('Error calculating birds:', error)
+            }
+        }
+
+        calculateBirds()
+    }, [selectedShedId, productionCrates, sheds, setValue])
 
     const onSubmit = async (data: DailyEntryFormData) => {
         if (!user) return
@@ -193,30 +251,36 @@ export default function WorkerDailyEntryPage() {
                                         error={errors.production_crates?.message}
                                         {...register('production_crates', { valueAsNumber: true })}
                                     />
-                                    <Input
-                                        label="Prod. Birds"
-                                        type="number"
-                                        className="font-mono"
-                                        error={errors.production_birds?.message}
-                                        {...register('production_birds', { valueAsNumber: true })}
-                                    />
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                                            Prod. Birds
+                                        </label>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
+                                            {calculatedBirds?.production_birds || 0}
+                                            <span className="text-xs text-gray-500 ml-2">(auto-calculated)</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4">
-                                    <Input
-                                        label="Total Birds"
-                                        type="number"
-                                        className="font-mono"
-                                        error={errors.total_birds?.message}
-                                        {...register('total_birds', { valueAsNumber: true })}
-                                    />
-                                    <Input
-                                        label="Non-Prod"
-                                        type="number"
-                                        className="font-mono"
-                                        error={errors.non_production?.message}
-                                        {...register('non_production', { valueAsNumber: true })}
-                                    />
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                                            Total Birds
+                                        </label>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
+                                            {calculatedBirds?.total_birds || 0}
+                                            <span className="text-xs text-gray-500 ml-2">(auto-calc)</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                                            Non-Prod
+                                        </label>
+                                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white font-mono flex items-center">
+                                            {calculatedBirds?.non_production || 0}
+                                            <span className="text-xs text-gray-500 ml-2">(auto-calc)</span>
+                                        </div>
+                                    </div>
                                     <Input
                                         label="Mortality"
                                         type="number"
