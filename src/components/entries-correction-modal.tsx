@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Modal, Button, Input } from '@/components/ui'
 import { DailyEntryWithRelations } from '@/lib/database.types'
 
@@ -27,14 +27,28 @@ export function EntriesCorrectionModal({
     onSave,
 }: EntriesCorrectionModalProps) {
     const [formData, setFormData] = useState({
-        production_crates: entry?.production_crates || 0,
-        production_birds: entry?.production_birds || 0,
-        total_birds: entry?.total_birds || 0,
-        non_production: entry?.non_production || 0,
-        mortality: entry?.mortality || 0,
-        notes: entry?.notes || '',
+        production_crates: 0,
+        production_birds: 0,
+        total_birds: 0,
+        non_production: 0,
+        mortality: 0,
+        notes: '',
     })
     const [isSaving, setIsSaving] = useState(false)
+
+    // Initialize form data when entry changes
+    useEffect(() => {
+        if (entry && isOpen) {
+            setFormData({
+                production_crates: entry.production_crates || 0,
+                production_birds: entry.production_birds || 0,
+                total_birds: entry.total_birds || 0,
+                non_production: entry.non_production || 0,
+                mortality: entry.mortality || 0,
+                notes: entry.notes || '',
+            })
+        }
+    }, [entry, isOpen])
 
     if (!entry) return null
 
@@ -53,9 +67,22 @@ export function EntriesCorrectionModal({
         }))
     }
 
+    const handleTotalBirdsChange = (value: string) => {
+        const totalBirds = parseFloat(value) || 0
+        const nonProduction = Math.max(0, totalBirds - formData.production_birds)
+
+        setFormData(prev => ({
+            ...prev,
+            total_birds: totalBirds,
+            non_production: nonProduction,
+        }))
+    }
+
     const handleChange = (field: string, value: string | number) => {
         if (field === 'production_crates') {
             handleCratesChange(value as string)
+        } else if (field === 'total_birds') {
+            handleTotalBirdsChange(value as string)
         } else {
             setFormData(prev => ({
                 ...prev,
