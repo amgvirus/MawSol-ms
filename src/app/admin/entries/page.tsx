@@ -132,6 +132,7 @@ export default function AdminEntriesPage() {
 
     const handleSaveCorrection = async (values: any) => {
         if (!selectedEntry || !user) {
+            console.error('Missing selectedEntry or user')
             setErrorMessage('User not authenticated')
             return
         }
@@ -139,15 +140,21 @@ export default function AdminEntriesPage() {
         try {
             setIsSaving(true)
             setErrorMessage('')
-            console.log('Saving correction for entry:', selectedEntry.id, 'with values:', values, 'admin:', user.id)
+            console.log('=== Saving Correction ===')
+            console.log('Entry ID:', selectedEntry.id)
+            console.log('Admin ID:', user.id)
+            console.log('Update values:', values)
             await correctDailyEntry(selectedEntry.id, values, user.id, selectedEntry)
+            console.log('Correction saved successfully')
             await loadEntries(currentPage)
             setIsModalOpen(false)
             setSelectedEntry(null)
             setSuccessMessage('Entry corrected successfully')
             setTimeout(() => setSuccessMessage(''), 3000)
         } catch (error: any) {
-            console.error('Error saving correction:', error)
+            console.error('=== Save Error ===')
+            console.error('Full error object:', error)
+            console.error('Error message:', error.message)
             setErrorMessage(error.message || 'Failed to save correction')
         } finally {
             setIsSaving(false)

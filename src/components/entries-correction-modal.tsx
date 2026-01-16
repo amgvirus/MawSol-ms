@@ -94,6 +94,15 @@ export function EntriesCorrectionModal({
     const handleSave = async () => {
         try {
             setIsSaving(true)
+            console.log('=== Modal Save Called ===')
+            console.log('FormData:', formData)
+            console.log('FormData types:', {
+                production_crates: typeof formData.production_crates,
+                production_birds: typeof formData.production_birds,
+                total_birds: typeof formData.total_birds,
+                non_production: typeof formData.non_production,
+                mortality: typeof formData.mortality,
+            })
             await onSave(formData)
             onClose()
         } finally {

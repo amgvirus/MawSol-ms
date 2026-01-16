@@ -206,20 +206,33 @@ export async function correctDailyEntry(
         notes: currentEntry.notes,
     }
 
+    // Build the update payload - only include updatable fields
+    const updatePayload: any = {
+        production_crates: updates.production_crates,
+        production_birds: updates.production_birds,
+        total_birds: updates.total_birds,
+        non_production: updates.non_production,
+        mortality: updates.mortality,
+        notes: updates.notes,
+        corrected_by: adminId,
+        corrected_at: new Date().toISOString(),
+        original_values: originalValues,
+    }
+
+    console.log('Update payload:', updatePayload)
+
     // Update entry with correction metadata
     const { data, error } = await supabase
         .from('daily_entries')
-        .update({
-            ...updates,
-            corrected_by: adminId,
-            corrected_at: new Date().toISOString(),
-            original_values: originalValues,
-        } as any)
+        .update(updatePayload)
         .eq('id', id)
         .select()
         .single()
 
-    if (error) throw new Error(error.message)
+    if (error) {
+        console.error('Supabase error:', error)
+        throw new Error(error.message)
+    }
     return data
 }
 
