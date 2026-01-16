@@ -60,7 +60,12 @@ export default function AdminEntriesPage() {
         }
     })
 
-    const formValues = watch()
+    // Watch individual fields to avoid object recreation
+    const shedId = watch('shed_id')
+    const workerId = watch('worker_id')
+    const startDate = watch('start_date')
+    const endDate = watch('end_date')
+    const showCorrected = watch('show_corrected')
 
     const loadData = useCallback(async () => {
         try {
@@ -84,10 +89,10 @@ export default function AdminEntriesPage() {
             const offset = (page - 1) * pageSize
 
             let query: any = {
-                shedId: formValues.shed_id || undefined,
-                workerId: formValues.worker_id || undefined,
-                startDate: formValues.start_date,
-                endDate: formValues.end_date,
+                shedId: shedId || undefined,
+                workerId: workerId || undefined,
+                startDate: startDate,
+                endDate: endDate,
                 limit: pageSize,
                 offset: offset,
             }
@@ -96,9 +101,9 @@ export default function AdminEntriesPage() {
             
             // Filter corrected entries if needed
             let filtered = data
-            if (formValues.show_corrected === 'corrected') {
+            if (showCorrected === 'corrected') {
                 filtered = data.filter(e => e.corrected_by)
-            } else if (formValues.show_corrected === 'original') {
+            } else if (showCorrected === 'original') {
                 filtered = data.filter(e => !e.corrected_by)
             }
 
@@ -109,7 +114,7 @@ export default function AdminEntriesPage() {
         } finally {
             setIsLoading(false)
         }
-    }, [formValues])
+    }, [shedId, workerId, startDate, endDate, showCorrected, pageSize])
 
     useEffect(() => {
         loadData()
@@ -117,7 +122,7 @@ export default function AdminEntriesPage() {
 
     useEffect(() => {
         loadEntries(1)
-    }, [formValues, loadEntries])
+    }, [shedId, workerId, startDate, endDate, showCorrected, loadEntries])
 
     const handleCorrect = (entry: DailyEntryWithRelations) => {
         setSelectedEntry(entry)
