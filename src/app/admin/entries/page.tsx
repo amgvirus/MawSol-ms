@@ -47,6 +47,7 @@ export default function AdminEntriesPage() {
     const [totalCount, setTotalCount] = useState(0)
     const [isSaving, setIsSaving] = useState(false)
     const [successMessage, setSuccessMessage] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
     const pageSize = 10
 
     const { register, handleSubmit, watch } = useForm<FilterData>({
@@ -130,18 +131,24 @@ export default function AdminEntriesPage() {
     }
 
     const handleSaveCorrection = async (values: any) => {
-        if (!selectedEntry || !user) return
+        if (!selectedEntry || !user) {
+            setErrorMessage('User not authenticated')
+            return
+        }
 
         try {
             setIsSaving(true)
-            await correctDailyEntry(selectedEntry.id, values, user.id)
+            setErrorMessage('')
+            console.log('Saving correction for entry:', selectedEntry.id, 'with values:', values, 'admin:', user.id)
+            await correctDailyEntry(selectedEntry.id, values, user.id, selectedEntry)
             await loadEntries(currentPage)
             setIsModalOpen(false)
             setSelectedEntry(null)
             setSuccessMessage('Entry corrected successfully')
             setTimeout(() => setSuccessMessage(''), 3000)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving correction:', error)
+            setErrorMessage(error.message || 'Failed to save correction')
         } finally {
             setIsSaving(false)
         }
@@ -172,6 +179,12 @@ export default function AdminEntriesPage() {
             {successMessage && (
                 <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400">
                     {successMessage}
+                </div>
+            )}
+
+            {errorMessage && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
+                    {errorMessage}
                 </div>
             )}
 

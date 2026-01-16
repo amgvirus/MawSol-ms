@@ -183,10 +183,15 @@ export async function getEntriesCount(options?: {
 export async function correctDailyEntry(
     id: string,
     updates: DailyEntryUpdate,
-    adminId: string
+    adminId: string,
+    originalEntry?: DailyEntryWithRelations
 ): Promise<DailyEntry> {
-    // Get the current entry to store original values
-    const currentEntry = await getDailyEntryById(id)
+    // Use provided entry or fetch it
+    let currentEntry = originalEntry
+    if (!currentEntry) {
+        currentEntry = await getDailyEntryById(id)
+    }
+    
     if (!currentEntry) {
         throw new Error('Entry not found')
     }
