@@ -190,7 +190,7 @@ export async function correctDailyEntry(
     let currentEntry = originalEntry
     if (!currentEntry) {
         try {
-            currentEntry = await getDailyEntryById(id)
+            currentEntry = await getDailyEntryById(id) || undefined
         } catch (e) {
             console.error('Failed to fetch entry:', e)
             throw e
