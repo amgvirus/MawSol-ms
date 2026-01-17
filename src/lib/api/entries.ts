@@ -14,7 +14,7 @@ export async function getDailyEntries(options?: {
 }): Promise<DailyEntryWithRelations[]> {
     let query = supabase
         .from('daily_entries')
-        .select('*, shed:sheds(*), worker:profiles(*)')
+        .select('*, shed:sheds(*), worker:profiles!worker_id(*)')
         .order('entry_date', { ascending: false })
 
     if (options?.shedId) {
@@ -45,7 +45,7 @@ export async function getDailyEntries(options?: {
 export async function getDailyEntryById(id: string): Promise<DailyEntryWithRelations | null> {
     const { data, error } = await supabase
         .from('daily_entries')
-        .select('*, shed:sheds(*), worker:profiles(*)')
+        .select('*, shed:sheds(*), worker:profiles!worker_id(*)')
         .eq('id', id)
         .single()
 
