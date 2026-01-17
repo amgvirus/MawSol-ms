@@ -189,7 +189,12 @@ export async function correctDailyEntry(
     // Use provided entry or fetch it
     let currentEntry = originalEntry
     if (!currentEntry) {
-        currentEntry = await getDailyEntryById(id)
+        try {
+            currentEntry = await getDailyEntryById(id)
+        } catch (e) {
+            console.error('Failed to fetch entry:', e)
+            throw e
+        }
     }
     
     if (!currentEntry) {
@@ -208,18 +213,20 @@ export async function correctDailyEntry(
 
     // Build the update payload - only include updatable fields
     const updatePayload: any = {
-        production_crates: updates.production_crates,
-        production_birds: updates.production_birds,
-        total_birds: updates.total_birds,
-        non_production: updates.non_production,
-        mortality: updates.mortality,
-        notes: updates.notes,
+        production_crates: Number(updates.production_crates) || 0,
+        production_birds: Number(updates.production_birds) || 0,
+        total_birds: Number(updates.total_birds) || 0,
+        non_production: Number(updates.non_production) || 0,
+        mortality: Number(updates.mortality) || 0,
+        notes: updates.notes || '',
         corrected_by: adminId,
         corrected_at: new Date().toISOString(),
-        original_values: originalValues,
     }
 
-    console.log('Update payload:', updatePayload)
+    console.log('=== API correctDailyEntry ===')
+    console.log('Entry ID:', id)
+    console.log('Admin ID:', adminId)
+    console.log('Update payload:', JSON.stringify(updatePayload, null, 2))
 
     // Update entry with correction metadata
     const { data, error } = await supabase
@@ -230,9 +237,16 @@ export async function correctDailyEntry(
         .single()
 
     if (error) {
-        console.error('Supabase error:', error)
-        throw new Error(error.message)
+        console.error('=== Supabase Update Error ===')
+        console.error('Error code:', error.code)
+        console.error('Error message:', error.message)
+        console.error('Error details:', error.details)
+        console.error('Error hint:', (error as any).hint)
+        throw new Error(`Failed to update entry: ${error.message}`)
     }
+    
+    console.log('=== Update Successful ===')
+    console.log('Returned data:', data)
     return data
 }
 
